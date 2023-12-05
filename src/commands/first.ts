@@ -1,14 +1,14 @@
+import Command from '../base/Command'
 import { SlashCommandBuilder } from 'discord.js'
 
-export default {
+export default new Command({
   data: new SlashCommandBuilder()
     .setName('first')
     .setDescription('First Command'),
-
   execute: async (interaction) => {
     if (!interaction.isRepliable()) {
       return
     }
-    await interaction.reply('Hello')
+    await interaction.reply(`Hiiii, ${interaction.user.globalName}`)
   },
-} as CustomCommand
+})

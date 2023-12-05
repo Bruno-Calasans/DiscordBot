@@ -1,9 +1,11 @@
 import { Client, Events } from 'discord.js'
+import DCEvent from '../base/DCEvent'
+import log from '../helpers/log'
 
-export default {
+export default new DCEvent({
   name: Events.ClientReady,
   once: true,
   execute: async (client: Client) => {
-    console.log(`Bot "${client.user?.username}" is online!`)
+    log.success(`Bot "${client.user?.username}" is online!`)
   },
-}
+})

@@ -5,11 +5,12 @@ import {
   Events,
   Client,
 } from 'discord.js'
+import Command from './base/Command'
 
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      DISCORD_TOKEN: string
+      BOT_TOKEN: string
       CLIENT_ID: string
       GUILD_ID: string
     }
@@ -29,7 +30,7 @@ declare global {
 
 declare module 'discord.js' {
   export interface BaseClient {
-    commands: Collection<string, CustomCommand>
+    commands: Collection<string, Command>
   }
 }
 
