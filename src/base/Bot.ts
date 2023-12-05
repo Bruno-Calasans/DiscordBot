@@ -13,6 +13,12 @@ import log from '../helpers/log'
 import fileUtils from '../helpers/fileUtils'
 import Command from './Command'
 import DCEvent from './DCEvent'
+import Button from './Button'
+import path from 'path'
+
+type Components = {
+  buttons: Button[]
+}
 
 export default class Bot {
   public commands = new Collection<string, Command>()
@@ -39,15 +45,17 @@ export default class Bot {
     ],
   })
 
-  start() {
+  async start() {
     this.client.commands = new Collection<string, Command>()
-    this.client.on('ready', () => {
-      this.loadCommands()
-      this.registerCommands()
-      this.loadEvents()
-      this.registerEvents()
-      this.updateCommands()
-    })
+    this.client.buttons = new Collection<string, Button>()
+    log.debug('Setting bot...\n')
+    this.loadCommands()
+    this.registerCommands()
+    this.loadEvents()
+    this.registerEvents()
+    this.loadComponents()
+    await this.updateCommands()
+    log.debug('Settings loaded!')
     this.client.login(BOT_TOKEN)
   }
 
@@ -62,7 +70,7 @@ export default class Bot {
       log.info(`Command "${name}" is registered`)
     }
 
-    log.warn('Commands registered!')
+    log.success('Commands registered!\n')
   }
 
   loadCommands() {
@@ -75,7 +83,7 @@ export default class Bot {
 
     // getting commands from files
     for (const file of commandsFiles) {
-      const command = require(file.path).default as Command
+      const command = require(file.path).default as unknown
 
       // valid command file
       if (command && command instanceof Command) {
@@ -86,19 +94,14 @@ export default class Bot {
           commands.push(command)
         }
 
-        // adding components
-        // if (buttons) buttons.forEach((run, key) => this.buttons.set(key, run))
-        // if (selects) selects.forEach((run, key) => this.selects.set(key, run))
-        // if (modals) modals.forEach((run, key) => this.modals.set(key, run))
-
         // adding command to
         commands.push(command)
-        log.info(`✅ Command "${commandName}" has been loaded!`)
+        log.info(`✅ Command "${commandName}" has been loaded`)
       } else {
         log.error(`❌ The file "${file.base}" is a invalid command! `)
       }
     }
-    log.warn('Commands loaded!')
+    log.success('Commands loaded!\n')
   }
 
   loadEvents() {
@@ -110,10 +113,12 @@ export default class Bot {
 
       if (event && event instanceof DCEvent) {
         this.events.set(event.name, event)
-        log.info(`Event "${event.name}" has been loaded!`)
+        log.info(`✅ Event "${event.name}" has been loaded`)
+      } else {
+        log.error(`❌ The file "${file.base}" is a invalid event! `)
       }
     }
-    log.warn('Events Loaded.')
+    log.success('Events Loaded!\n')
   }
 
   registerEvents() {
@@ -127,7 +132,34 @@ export default class Bot {
         this.client.on(name, (...args) => event.execute(...args))
       }
     }
-    log.warn('Events registered!')
+    log.success('Events registered!\n')
+  }
+
+  loadComponents() {
+    log.warn('Loading components...')
+    const folders = fileUtils.getFolders(FOLDERS.COMPONENTS)
+
+    for (const folder of folders) {
+      const componentFolder = path.join(FOLDERS.COMPONENTS, folder)
+      const files = fileUtils.getFiles(componentFolder)
+
+      // no files
+      if (files.length === 0) continue
+
+      // importing files
+      for (const file of files) {
+        const component = require(file.path).default as unknown
+
+        if (component && component instanceof Button) {
+          this.client.buttons.set(file.name, component)
+          log.info(`✅ Button "${file.name}" has been loaded`)
+        } else {
+          log.error(`❌ The file "${file.base}" is a invalid component! `)
+        }
+      }
+    }
+
+    log.success('Components loaded!\n')
   }
 
   async updateCommands() {
@@ -139,7 +171,7 @@ export default class Bot {
     }
 
     try {
-      log.warn(`Refreshing ${this.commands.size} application (/) commands...`)
+      log.warn(`Updating ${this.commands.size} application (/) commands...`)
 
       // The put method is used to fully refresh all commands in the guild with the current set
       const data = (await rest.put(
@@ -149,7 +181,7 @@ export default class Bot {
       )) as any
 
       log.success(
-        `Successfully refreshed ${data.length} application (/) commands.`,
+        `Successfully update ${data.length} application (/) commands.`,
       )
     } catch (error) {
       log.error(error as string)

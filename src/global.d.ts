@@ -6,6 +6,7 @@ import {
   Client,
 } from 'discord.js'
 import Command from './base/Command'
+import Button from './base/Button'
 
 declare global {
   namespace NodeJS {
@@ -31,6 +32,7 @@ declare global {
 declare module 'discord.js' {
   export interface BaseClient {
     commands: Collection<string, Command>
+    buttons: Collection<string, Button>
   }
 }
 
