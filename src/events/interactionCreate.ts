@@ -39,5 +39,20 @@ export default new DCEvent({
         log.error(error as string)
       }
     }
+
+    if (interaction.isAnySelectMenu()) {
+      const selects = interaction.client.selects
+      const customId = interaction.customId
+      const select = selects.get(customId)
+      console.log(customId)
+
+      if (!select) return log.error('No select found')
+
+      try {
+        select.execute(interaction)
+      } catch (error) {
+        log.error(error as string)
+      }
+    }
   },
 })

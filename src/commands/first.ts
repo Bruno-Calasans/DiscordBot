@@ -9,6 +9,8 @@ export default new Command({
     if (!interaction.isRepliable()) {
       return
     }
-    await interaction.reply(`Hiiii, ${interaction.user.globalName}`)
+    await interaction.reply(
+      `Hiiii, ${interaction.user.tag}. Now, go fuck yourself`,
+    )
   },
 })

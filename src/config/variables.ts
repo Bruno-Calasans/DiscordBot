@@ -11,5 +11,5 @@ const FOLDERS = {
   COMPONENTS: path.join(BASE_PATH, 'components'),
 }
 
-const { BOT_TOKEN, CLIENT_ID } = process.env
-export { BOT_TOKEN, CLIENT_ID, BASE_PATH, FOLDERS }
+const { BOT_TOKEN, CLIENT_ID, GUILD_ID } = process.env
+export { BOT_TOKEN, CLIENT_ID, GUILD_ID, BASE_PATH, FOLDERS }

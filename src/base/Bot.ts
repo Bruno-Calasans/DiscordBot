@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { BOT_TOKEN, CLIENT_ID, FOLDERS } from '../config/variables'
 import {
   Client,
   GatewayIntentBits,
@@ -9,23 +8,18 @@ import {
   Routes,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from 'discord.js'
+import { BOT_TOKEN, CLIENT_ID, FOLDERS, GUILD_ID } from '../config/variables'
 import log from '../helpers/log'
 import fileUtils from '../helpers/fileUtils'
 import Command from './Command'
 import DCEvent from './DCEvent'
-import Button from './Button'
+import Button from './components/Button'
 import path from 'path'
-
-type Components = {
-  buttons: Button[]
-}
+import StringSelect from './components/Select/StringSelect'
 
 export default class Bot {
   public commands = new Collection<string, Command>()
   public events = new Collection<string, DCEvent>()
-  // public buttons: ComponentsButton = new Collection()
-  // public selects: ComponentsSelect = new Collection()
-  // public modals: ComponentsModal = new Collection()
   public client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
@@ -45,10 +39,16 @@ export default class Bot {
     ],
   })
 
-  async start() {
+  start() {
+    this.loadConfigs()
+    this.client.login(BOT_TOKEN)
+  }
+
+  async loadConfigs() {
+    log.debug('Setting bot...\n')
     this.client.commands = new Collection<string, Command>()
     this.client.buttons = new Collection<string, Button>()
-    log.debug('Setting bot...\n')
+    this.client.selects = new Collection<string, StringSelect>()
     this.loadCommands()
     this.registerCommands()
     this.loadEvents()
@@ -56,7 +56,6 @@ export default class Bot {
     this.loadComponents()
     await this.updateCommands()
     log.debug('Settings loaded!')
-    this.client.login(BOT_TOKEN)
   }
 
   registerCommands() {
@@ -153,6 +152,9 @@ export default class Bot {
         if (component && component instanceof Button) {
           this.client.buttons.set(file.name, component)
           log.info(`✅ Button "${file.name}" has been loaded`)
+        } else if (component && component instanceof StringSelect) {
+          this.client.selects.set(file.name, component)
+          log.info(`✅ Select "${file.name}" has been loaded`)
         } else {
           log.error(`❌ The file "${file.base}" is a invalid component! `)
         }
@@ -163,21 +165,22 @@ export default class Bot {
   }
 
   async updateCommands() {
-    const rest = new REST({ version: '10' }).setToken(BOT_TOKEN)
+    log.warn(`Updating ${this.commands.size} application (/) commands...`)
 
+    const rest = new REST({ version: '10' }).setToken(BOT_TOKEN)
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
+
     for (const command of this.commands.values()) {
       commandsJson.push(command.data.toJSON())
     }
 
     try {
-      log.warn(`Updating ${this.commands.size} application (/) commands...`)
-
       // The put method is used to fully refresh all commands in the guild with the current set
       const data = (await rest.put(
-        Routes.applicationCommands(CLIENT_ID),
-        // Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-        { body: commandsJson },
+        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+        {
+          body: commandsJson,
+        },
       )) as any
 
       log.success(
