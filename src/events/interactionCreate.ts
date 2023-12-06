@@ -29,7 +29,6 @@ export default new DCEvent({
       const buttons = interaction.client.buttons
       const customId = interaction.customId
       const btn = buttons.get(customId)
-      console.log(customId)
 
       if (!btn) return log.error('No button found')
 
@@ -44,12 +43,25 @@ export default new DCEvent({
       const selects = interaction.client.selects
       const customId = interaction.customId
       const select = selects.get(customId)
-      console.log(customId)
 
       if (!select) return log.error('No select found')
 
       try {
         select.execute(interaction)
+      } catch (error) {
+        log.error(error as string)
+      }
+    }
+
+    if (interaction.isModalSubmit()) {
+      const modals = interaction.client.modals
+      const customId = interaction.customId
+      const modal = modals.get(customId)
+
+      if (!modal) return log.error('No modal found')
+
+      try {
+        modal.execute(interaction)
       } catch (error) {
         log.error(error as string)
       }

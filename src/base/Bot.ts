@@ -19,6 +19,7 @@ import {
   Routes,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from 'discord.js'
+import Modal from './components/Modal'
 
 export default class Bot {
   public commands = new Collection<string, Command>()
@@ -49,9 +50,10 @@ export default class Bot {
 
   async loadConfigs() {
     log.debug('Setting bot...\n')
-    this.client.commands = new Collection<string, Command>()
-    this.client.buttons = new Collection<string, Button>()
-    this.client.selects = new Collection<string, StringSelect>()
+    this.client.commands = new Collection()
+    this.client.buttons = new Collection()
+    this.client.selects = new Collection()
+    this.client.modals = new Collection()
     this.loadCommands()
     this.registerCommands()
     this.loadEvents()
@@ -164,6 +166,9 @@ export default class Bot {
         ) {
           this.client.selects.set(file.name, component)
           log.info(`✅ Select "${file.name}" has been loaded`)
+        } else if (component && component instanceof Modal) {
+          this.client.modals.set(file.name, component)
+          log.info(`✅ Modal "${file.name}" has been loaded`)
         } else {
           log.error(`❌ The file "${file.base}" is a invalid component! `)
         }

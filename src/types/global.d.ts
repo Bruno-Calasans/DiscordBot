@@ -4,6 +4,7 @@ import {
   Collection,
   ClientEvents,
   ComponentBuilder,
+  ModalBuilder,
 } from 'discord.js'
 import Command from '../base/Command'
 import Button from '../base/components/Button'
@@ -11,6 +12,7 @@ import StringSelect from '../base/components/Select/StringSelect'
 import RoleSelect from '../base/components/Select/RoleSelect'
 import ChannelSelect from '../base/components/Select/ChannelSelect'
 import UserSelect from '../base/components/Select/UserSelect'
+import Modal from '../base/components/Modal'
 
 declare global {
   namespace NodeJS {
@@ -21,6 +23,7 @@ declare global {
     }
   }
 
+  type ComponentBuilder = ComponentBuilder | ModalBuilder
   type Select = StringSelect | RoleSelect | ChannelSelect | UserSelect
   type Components = Button | Select
 
@@ -46,6 +49,7 @@ declare module 'discord.js' {
     commands: Collection<string, Command>
     buttons: Collection<string, Button>
     selects: Collection<string, Select>
+    modals: Collection<string, Modal>
   }
 }
 
