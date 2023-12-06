@@ -1,17 +1,11 @@
 import { ClientEvents } from 'discord.js'
 
-interface IDCEvent {
-  name: keyof ClientEvents
-  once?: boolean
-  execute: (...args: any[]) => void
-}
-
-export default class DCEvent implements IDCEvent {
+export default class DCEvent implements IEvent {
   public name: keyof ClientEvents = 'debug'
   public once = false
-  execute(...args: any[]) {}
+  execute: (...args: any[]) => void
 
-  constructor({ name, once = false, execute }: IDCEvent) {
+  constructor({ name, once = false, execute }: IEvent) {
     this.name = name
     this.once = once
     this.execute = execute

@@ -1,9 +1,6 @@
 import { StringSelectMenuBuilder, Interaction } from 'discord.js'
 
-interface IStringSelect {
-  data: StringSelectMenuBuilder
-  execute: (interation: Interaction) => void
-}
+export type IStringSelect = Component<StringSelectMenuBuilder>
 
 export default class StringSelect implements IStringSelect {
   public data

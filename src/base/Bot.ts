@@ -1,4 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import path from 'path'
+import log from '../helpers/log'
+import fileUtils from '../helpers/fileUtils'
+import Command from './Command'
+import DCEvent from './DCEvent'
+import Button from './components/Button'
+import StringSelect from './components/Select/StringSelect'
+import RoleSelect from './components/Select/RoleSelect'
+import ChannelSelect from './components/Select/ChannelSelect'
+import UserSelect from './components/Select/UserSelect'
+import { BOT_TOKEN, CLIENT_ID, FOLDERS, GUILD_ID } from '../config/variables'
 import {
   Client,
   GatewayIntentBits,
@@ -8,14 +19,6 @@ import {
   Routes,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from 'discord.js'
-import { BOT_TOKEN, CLIENT_ID, FOLDERS, GUILD_ID } from '../config/variables'
-import log from '../helpers/log'
-import fileUtils from '../helpers/fileUtils'
-import Command from './Command'
-import DCEvent from './DCEvent'
-import Button from './components/Button'
-import path from 'path'
-import StringSelect from './components/Select/StringSelect'
 
 export default class Bot {
   public commands = new Collection<string, Command>()
@@ -152,7 +155,13 @@ export default class Bot {
         if (component && component instanceof Button) {
           this.client.buttons.set(file.name, component)
           log.info(`✅ Button "${file.name}" has been loaded`)
-        } else if (component && component instanceof StringSelect) {
+        } else if (
+          component &&
+          (component instanceof StringSelect ||
+            component instanceof RoleSelect ||
+            component instanceof ChannelSelect ||
+            component instanceof UserSelect)
+        ) {
           this.client.selects.set(file.name, component)
           log.info(`✅ Select "${file.name}" has been loaded`)
         } else {

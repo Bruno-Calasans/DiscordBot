@@ -1,15 +1,10 @@
 import { SlashCommandBuilder, Interaction } from 'discord.js'
 
-interface ICommand {
-  data: SlashCommandBuilder
-  execute: (interation: Interaction) => void
-}
-
-export default class Command implements ICommand {
+export default class Command implements CustomCommand {
   public data = new SlashCommandBuilder()
-  execute(interation: Interaction) {}
+  execute: (interation: Interaction) => void
 
-  constructor({ data, execute }: ICommand) {
+  constructor({ data, execute }: CustomCommand) {
     this.data = data
     this.execute = execute
   }

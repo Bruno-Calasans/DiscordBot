@@ -18,7 +18,7 @@ export default new StringSelect({
     ),
   async execute(interation) {
     if (!interation.isRepliable()) return
-    if (interation.isAnySelectMenu()) {
+    if (interation.isStringSelectMenu()) {
       const option = interation.values[0]
       await interation.reply(`You selected "${option}". I'knew you are gay`)
     }
