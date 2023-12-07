@@ -6,6 +6,6 @@ export default new DCEvent({
   name: Events.ClientReady,
   once: true,
   execute: async (client: Client) => {
-    log.info(`Bot "${client.user?.username}" is online!`)
+    log.success(`\nBot "${client.user?.username}" is online!`)
   },
 })

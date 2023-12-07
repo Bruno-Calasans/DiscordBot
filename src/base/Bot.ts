@@ -20,10 +20,9 @@ import {
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from 'discord.js'
 import Modal from './components/Modal'
+import Context from './Context'
 
 export default class Bot {
-  public commands = new Collection<string, Command>()
-  public events = new Collection<string, DCEvent>()
   public client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
@@ -49,40 +48,21 @@ export default class Bot {
   }
 
   async loadConfigs() {
-    log.debug('Setting bot...\n')
+    log.debug('Loading settings...\n')
     this.client.commands = new Collection()
     this.client.buttons = new Collection()
     this.client.selects = new Collection()
     this.client.modals = new Collection()
     this.loadCommands()
-    this.registerCommands()
     this.loadEvents()
-    this.registerEvents()
     this.loadComponents()
     await this.updateCommands()
-    log.debug('Settings loaded!')
-  }
-
-  registerCommands() {
-    if (!this.client) return
-    if (!this.commands) return
-
-    log.warn('Registering commands...')
-
-    for (const [name, command] of this.commands) {
-      this.client.commands.set(name, command)
-      log.info(`Command "${name}" is registered`)
-    }
-
-    log.success('Commands registered!\n')
+    log.debug('\nSettings loaded!')
   }
 
   loadCommands() {
-    if (!this.client) return
-
     log.warn('Loading commands...')
 
-    const commands: Command[] = []
     const commandsFiles = fileUtils.getFiles(FOLDERS.COMMANDS)
 
     // getting commands from files
@@ -90,16 +70,12 @@ export default class Bot {
       const command = require(file.path).default as unknown
 
       // valid command file
-      if (command && command instanceof Command) {
+      if (
+        command &&
+        (command instanceof Command || command instanceof Context)
+      ) {
         const commandName = command.data.name
-
-        if (commandName) {
-          this.commands.set(commandName, command)
-          commands.push(command)
-        }
-
-        // adding command to
-        commands.push(command)
+        this.client.commands.set(commandName, command)
         log.info(`✅ Command "${commandName}" has been loaded`)
       } else {
         log.error(`❌ The file "${file.base}" is a invalid command! `)
@@ -116,27 +92,17 @@ export default class Bot {
       const event = require(file.path).default as DCEvent
 
       if (event && event instanceof DCEvent) {
-        this.events.set(event.name, event)
+        if (event.once) {
+          this.client.once(event.name, (...args) => event.execute(...args))
+        } else {
+          this.client.on(event.name, (...args) => event.execute(...args))
+        }
         log.info(`✅ Event "${event.name}" has been loaded`)
       } else {
         log.error(`❌ The file "${file.base}" is a invalid event! `)
       }
     }
     log.success('Events Loaded!\n')
-  }
-
-  registerEvents() {
-    if (this.events.size === 0) return
-    log.warn('Registering events...')
-    for (const [name, event] of this.events) {
-      log.info(`Event "${name}" is registered`)
-      if (event.once) {
-        this.client.once(name, (...args) => event.execute(...args))
-      } else {
-        this.client.on(name, (...args) => event.execute(...args))
-      }
-    }
-    log.success('Events registered!\n')
   }
 
   loadComponents() {
@@ -179,13 +145,14 @@ export default class Bot {
   }
 
   async updateCommands() {
-    log.warn(`Updating ${this.commands.size} application (/) commands...`)
+    const commands = this.client.commands
+    log.warn(`Updating ${commands.size} commands...`)
 
     const rest = new REST({ version: '10' }).setToken(BOT_TOKEN)
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
 
-    for (const command of this.commands.values()) {
-      commandsJson.push(command.data.toJSON())
+    for (const command of commands.values()) {
+      commandsJson.push(command.data.toJSON() as any)
     }
 
     try {
@@ -197,9 +164,7 @@ export default class Bot {
         },
       )) as any
 
-      log.success(
-        `Successfully update ${data.length} application (/) commands.`,
-      )
+      log.success(`Commands updated!`)
     } catch (error) {
       log.error(error as string)
     }

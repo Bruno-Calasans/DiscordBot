@@ -1,11 +1,3 @@
-import {
-  SlashCommandBuilder,
-  Interaction,
-  Collection,
-  ClientEvents,
-  ComponentBuilder,
-  ModalBuilder,
-} from 'discord.js'
 import Command from '../base/Command'
 import Button from '../base/components/Button'
 import StringSelect from '../base/components/Select/StringSelect'
@@ -13,6 +5,15 @@ import RoleSelect from '../base/components/Select/RoleSelect'
 import ChannelSelect from '../base/components/Select/ChannelSelect'
 import UserSelect from '../base/components/Select/UserSelect'
 import Modal from '../base/components/Modal'
+import Context from '../base/Context'
+import {
+  SlashCommandBuilder,
+  Interaction,
+  Collection,
+  ClientEvents,
+  ModalBuilder,
+  ContextMenuCommandBuilder,
+} from 'discord.js'
 
 declare global {
   namespace NodeJS {
@@ -32,6 +33,11 @@ declare global {
     execute: (interaction: Interaction) => unknown
   }
 
+  interface ContextCommand {
+    data: ContextMenuCommandBuilder
+    execute: (interaction: Interaction) => unknown
+  }
+
   interface Component<Builder extends ComponentBuilder> {
     data: Builder
     execute: (interaction: Interaction) => unknown
@@ -46,7 +52,7 @@ declare global {
 
 declare module 'discord.js' {
   export interface BaseClient {
-    commands: Collection<string, Command>
+    commands: Collection<string, Command | Context>
     buttons: Collection<string, Button>
     selects: Collection<string, Select>
     modals: Collection<string, Modal>

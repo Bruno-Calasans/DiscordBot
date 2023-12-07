@@ -11,8 +11,7 @@ export default new DCEvent({
       const command = interaction.client.commands.get(commmandName)
 
       if (!command) {
-        await interaction.reply('Command Not Found')
-        return
+        return log.error('No command found')
       }
 
       try {
@@ -64,6 +63,24 @@ export default new DCEvent({
         modal.execute(interaction)
       } catch (error) {
         log.error(error as string)
+      }
+    }
+
+    if (interaction.isContextMenuCommand()) {
+      const ctxCommandName = interaction.commandName
+      const ctxCommand = interaction.client.commands.get(ctxCommandName)
+
+      if (!ctxCommand) {
+        return log.error('No context command found')
+      }
+
+      try {
+        await ctxCommand.execute(interaction)
+      } catch (error) {
+        await interaction.reply({
+          content: 'There was an error while executing this context command!',
+          ephemeral: true,
+        })
       }
     }
   },
